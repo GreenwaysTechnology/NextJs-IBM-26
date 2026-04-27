@@ -612,6 +612,105 @@ export default function RootLayout(props) {
         </body>
     </html>
 }
+									&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+										Layouts and Pages-Routing
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+What is Routing?
+	Routing is nothing but mapping resources against url.
+
+Next.js uses "file-system based routing" , meaning you can use folders and files to define routes.
+
+Types of Routing implementation:
+
+1.page routing
+    It is old form of routing pattern, now it is not used
+   page routing was available before next.js version 12
+
+2.app routing
+    It is modern form of routing pattern, now it is heavily used
+    app routing has been available from next.js version 13 onwards
+create a page and map against url:
+.........................................................
+
+A page is UI that is rendered on a specific route. in order to create a page, "add page.js or page.jsx or page.tsx page.ts".
+
+Route:
+   means URL  ----> /products , /customers , /comments
+       route is mapped against folder
+  src/app/products/page.js   ------> /products
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+√ What is your project named? ... core-routing
+√ Would you like to use TypeScript? ... No / Yes
+√ Would you like to use ESLint? ... No / Yes
+√ Would you like to use Tailwind CSS? ... No / Yes
+√ Would you like your code inside a `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to use Turbopack for `next dev`? ... No / Yes
+√ Would you like to customize the import alias (`@/*` by default)? ... No / Yes
+√ What import alias would you like configured? ... @/*
+
+index route /Home route:
+.........................................
+
+src/app/page.js ->index route  - /
+
+ if you create page.js inside src/app folder which is called index route or home route.
+
+........................................................................................................................................................................................................................................
+										Nested Folders and Routing
+.....................................................................................................................................................................................................................................
+
+products page:
+
+Folder structure
+src/app/products/page.js
+src/app/customers/page.js
+src/app/contact/page.js
+
+URL
+/products
+
+export default function ProductPage() {
+    return <div>
+        <h1>This is Product Page...Comming soon</h1>
+    </div>
+}
+
+/customers
+export default function CustomerPage(){
+      return <div>
+        <h1>Customer Page</h1>
+      </div>
+}
+/contacts
+export default function ContactPage() {
+    return <div>
+        <h1>Contact Page</h1>
+    </div>
+}
+.......................................................................................................................................................................................................................................
+										Deep Nesting
+
+URL
+/products/reviews/comments
+
+src/app/products/reviews/comments/page.js
+export default function Reviews(){
+    return <h1>Reviews Page</h1>
+}
+
+URL
+/products/reviews/page
+
+src/app/products/reviews/page.js
+export default function Reviews(){
+    return <h1>Reviews Page</h1>
+}
+
+Hands on :
+					   You create a route for courses, training ,instructor
 
 
 
