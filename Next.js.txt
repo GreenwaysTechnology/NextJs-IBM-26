@@ -151,7 +151,7 @@ Why SSR?
 2.Faster first Paint
     The user sees the page sooner, especially on slow networks
 
-..................................................................................................................................................................................................................................	 											Rendering Types
+..................................................................................................................................................................................................................................	 								Rendering Types
 ..................................................................................................................................................................................................................................
 What is Rendering?
    Render means preparation, HTML Page preparation...
@@ -209,17 +209,7 @@ SSG - Build time or ahead of time
 SSR - Request time
 
 ISR = SSG + SSR - Build time + request time
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-									ISR - Incremental Static Rendering
-......................................................................................................................................................................................................................................
-
-SSG - Build time or ahead of time
-SSR - Request time
-
-ISR = SSG + SSR - Build time + request time
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 									What is Next.js?
 
 Next js is a framework that helps to build web apps of all types
@@ -272,40 +262,8 @@ Next.js tech stack:
 3.Next uses api layer- rest api development
 4.Next can talk to any database via orm frameworks...
 
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-		              				 Next js UI layer - Next JS APP architecture
-...........................................................................................................................................................................................................................................
-Next js uses "react core features" to build UI layer..., next has been built on the top of core react lib.
-
-Since react is SPA lib, how to build server side apps(SSR)?
-
-React provides two packages:
-
-1.react-dom/client contains APIs to render React components on the client (in the browser). - Pure SPA apps
-
-2.react-dom/server contains APIs to render React components on the server - SSR apps/ISR apps/SSG apps
-
-							    Next.js Framework
-							 		|
-					-------------------------------------------------------------------
-							 react-dom/server package
-
-React core features:
-1.React component driven
-2.React uses data mutation techniques like props and state
-3.React uses event listeners for interactions
-4.React hooks
-
-Next.js tech stack:
-
-1.React as ui layer
-2.Next does not recommend to use "redux"
-3.Next uses api layer- rest api development
-4.Next can talk to any database via orm frameworks...
-
-.......................................................................................................................................................................................................................................
 									Next js framework and Runtime Architecture
-.......................................................................................................................................................................................................................................
+.................................................................................................................................................................................................................
 
 Next js uses "Rust based build system" where as react uses web pack build ....
 
@@ -372,23 +330,6 @@ Languages are used to build next application
 2.Javascript
 
 
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-											Next application development pattern
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-There are two ways we can build next application
-
-1.Using Page Router
-	It is old way / traditional way of building next application , Next version before 13.
-	It is not recommended way of building modern next application
-2.Using App Router
-    It is the latest way of building next application, after next version 12
-    It is recommended way of building next application
-
-Languages are used to build next application
-
-1.Typescript
-2.Javascript
 
 Steps to create project:
 .......................................
@@ -461,7 +402,7 @@ global.css
 
 public
   Static assets
-************************************************************************************************************************************************************
+************************************************************************************************************************************************
 										How to run next app?
 
 dev, build and prod
@@ -477,6 +418,200 @@ First you have to build
 
 Then you have run in production mode
     >npm start
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+					                				Next.js Application Architecture
+.................................................................................................................................................................................................................
+ 			               Next.js app is server side app, so for each web page ,the html page is created.
+ 		        				  "Next App is conventional over Configuration based"
+
+conventional over configuration is a software design principle that reduces the need for explicit configuration by following sensible defaults.
+conventional over configuration programming model
+
+let s say some framework eg
+
+i want to build curd operations by connecting mongodb
+
+employee - domain folder
+ entity
+    enity.config.js
+    id name salary department
+ 
+ask the framework to generate code for you...
+ 
+somthing.save()
+something.read()
+something.update()
+
+Like above, next is also following conventional over configuration pattern
+file names and folder names are standard based.
+
+Basic folder structure : for app router pattern
+
+src - root folder
+ |
+ app - sub folder
+   |
+  any folder- domain folder eg: contacts ,products,customers
+
+filenames are predefined...like page.js , layout.js
+
+FileNames:(in built files /conventional file names)
+fileName.js | ts | jsx | tsx
+
+1.layout.js
+2.page.js
+3.template.js
+4.route.js
+5.error.js
+6.not-found.js
+7.global-error.js
+8.loading.js
+9.default.js
+
+ 		Apart from the above file names we can create our won files like Products.js|jsx - Colocation
+
+
+.................................................................................................................................................................................................................
+										 React core features inside next js
+.................................................................................................................................................................................................................
+1.Component:
+	  In react every thing is component, in next also the component driven arch is followed.
+2.Props
+    In react data is passed to the component via props.
+Why:
+       Components are created in a configurable way..
+
+Types of Props:
+
+1.Data as prop:
+
+function User(props){
+   return <div>
+		<h1>{props.id} {props.name}</h1>
+  <div>
+}
+
+   <User id={1} name={'Subramanian'} />
+
+2.State as Prop -Dynamic Prop
+
+  function User(){
+    const [id,setId] = useState(1)
+    return <UserDetails id={id} />
+  }
+
+3.function as Prop- Listeners as Prop
+
+  function User(){
+    const [id,setId] = useState(1)
+    return <UserDetails setId={setId} />
+  }
+
+4.Component as Prop
+
+Component as Prop syntax we use heavily in Next.js
+
+Component Rendering:
+
+function Tab(props){
+   return <> {props.children} </>
+}
+<Tab/> - Self Closing
+  This component has no children
+
+<Tab>
+    <Grid/> -  Component as Prop
+<Tab>
+.................................................................................................................................................................................................................
+ 										 Every thing is component  in Next.js
+.................................................................................................................................................................................................................
+core /built in components;
+
+Page Component: - page.js
+  It is place holder component which displays ui.
+
+Layout Component: layout.js
+ 	 It is container component which holds Page Component
+
+Parent and child:
+
+Pattern 1:
+
+function Page() {
+    **return <h1>Home Page</h1>**
+
+}
+function Layout(){
+**return <Page/>**
+
+}
+
+Pattern 2:
+function Page() {
+    return <h1>Home Page</h1>
+}
+function Layout(props){
+**return <div>{props.children}</div>**
+
+}
+
+function App(){
+ return <Layout>
+ 	<Page/>
+</Layout>
+}
+
+In Next js we use pattern 2,
+You cant  supply your own entry function, Next, internally suppiles
+
+Every next application begins /starts with root layout - src/app/layout.js
+
+layout - parent
+ 	  ------------------------------
+          |                             |
+                      Page -child |
+          |                             |
+          |                             |
+          |                             |
+           -----------------------------
+
+<Layout>
+    <Page/>
+</Layout>
+
+How to declare in built components (page,layout etc...) ?
+
+ 1.every component must be "functional component" - No Class Component.
+ 2.every in built component (page,layout...)  must be exported using "export default" only.
+ 3.Every Next application must have "root layout" src/app/layout.js
+ 4.Every Next application may have  "home/landing page" src/app/page.js
+ 5.Component Name can be any thing like HomePage,Home,MyHomePage,MyLayout etc..
+
+page.js | page.jsx | page.tsx
+layout.js | layout.jsx | layout.tsx
+
+
+How to create Page and layout Components ?
+
+src/page.js
+
+function Home() {
+  //you must return jsx
+  return <div>
+    <h1>Home Page</h1>
+  </div>
+}
+
+export default Home;
+
+src/app/layout.js
+export default function RootLayout(props) {
+    return <html lang="en">
+        <body>
+            {props.children}
+        </body>
+    </html>
+}
 
 
 
