@@ -1,0 +1,11 @@
+
+Next js Topics:
+
+1.Next js core concepts and implementation
+2.API Development using Next js
+3.Database Programming with Next.js
+4.Graphql integration with next.js
+
+Lab setup:
+Node.js
+vs code
