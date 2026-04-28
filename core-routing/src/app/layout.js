@@ -4,7 +4,11 @@ export default function RootLayout(props) {
     <html
       lang="en"
     >
-      <body>{props.children}</body>
+      <body>
+        <div id="rootLayout">
+          {props.children}
+        </div>
+      </body>
     </html>
   );
 }
