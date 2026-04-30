@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
-// import "./globals.css";
-import Link from "next/link";
+ import "./globals.css";
+//import 'bootstrap/dist/css/bootstrap.css'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,24 +23,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="m-20">
-        <nav className="mb-5">
-          <ul>
-            <li>
-              <Link href="/todos">Todos-MockData</Link>
-            </li>
-            <li>
-              <Link href="/posts">Posts-API Data</Link>
-            </li>
-            <li>
-              <Link href="/products">Products-ShallowRouting</Link>
-            </li>
-          </ul>
-        </nav>
-
-        {children}
-
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
