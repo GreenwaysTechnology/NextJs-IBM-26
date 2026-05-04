@@ -2648,5 +2648,364 @@ export default function PostPage(){
       <FetchPostsUsingSWR/>
     </>
 }
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+										 Building REST APIs in Next.js  
+...........................................................................................................................................................................................................................................
+
+REST api can be used to write rest api which may talk to databases or external rest api or Graphql api or microservices
+
+Route Handler:
+  Route handlers are used to create api in next
+
+File Name:
+ route.js
+
+
+src/app/todos/
+   page.js
+   layout.js
+   route.js - it is not recommended to write like this
+
+Recommended Folder Structure:
+.....................................................
+src/app/api/todos
+    route.js
+    	[id]/
+    	  route.js
+
+url pattern
+ /api/todos 
+ /api/posts
+ /api/products
+ /api/products/1
+
+Syntax:
+
+export async function HTTPVerb(request){
+
+}
+=>Always route function must have "export" only.
+=>Function must have async keyword
+=>Function args may have request object.
+=>Return value must be always json
+
+Supported Verbs:
+
+1.GET
+2.POST
+3.PUT
+4.PATCH
+5.DELETE
+6.HEAD
+7.OPTIONS
+
+API Arg:
+ NextRequest Object used to handle incoming client request
+ NextResponse Object used to send response to the client.
+
+Return Type always be json:
+  function name must be marked as "GET/POST"
+
+√ What is your project named? ... rest-app
+√ Would you like to use TypeScript? ... No / Yes
+√ Would you like to use ESLint? ... No / Yes
+√ Would you like to use Tailwind CSS? ... No / Yes
+√ Would you like your code inside a `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to use Turbopack for `next dev`? ... No / Yes
+√ Would you like to customize the import alias (`@/*` by default)? ... No / Yes
+√ What import alias would you like configured? ... @/*
+Use case:Simple Rest api
+
+src/app/api/greeter/route.js
+import { NextResponse } from "next/server";
+
+export async function GET(req) {
+    //resonse
+    return NextResponse.json({ message: 'Welcome to Rest api' })
+}
+
+Testing:
+http://localhost:3000/api/greeter.
+
+Patterns:
+
+1.With Mock data
+2.With External REST API
+3.With Database
+
+src/app/mock-data/users.js
+export default [
+    {
+        id: 1,
+        name: "Leanne Graham",
+        username: "Bret",
+        email: "Sincere@april.biz",
+    },
+    {
+        id: 2,
+        name: "Ervin Howell",
+        username: "Antonette",
+        email: "Shanna@melissa.tv",
+
+    },
+    {
+        id: 3,
+        name: "Clementine Bauch",
+        username: "Samantha",
+        email: "Nathan@yesenia.net",
+
+    },
+    {
+        id: 4,
+        name: "Patricia Lebsack",
+        username: "Karianne",
+        email: "Julianne.OConner@kory.org",
+
+    },
+    {
+        id: 5,
+        name: "Chelsey Dietrich",
+        username: "Kamren",
+        email: "Lucio_Hettinger@annie.ca",
+
+    },
+    {
+        id: 6,
+        name: "Mrs. Dennis Schulist",
+        username: "Leopoldo_Corkery",
+        email: "Karley_Dach@jasper.info",
+
+    },
+    {
+        id: 7,
+        name: "Kurtis Weissnat",
+        username: "Elwyn.Skiles",
+        email: "Telly.Hoeger@billy.biz",
+
+    },
+    {
+        id: 8,
+        name: "Nicholas Runolfsdottir V",
+        username: "Maxime_Nienow",
+        email: "Sherwood@rosamond.me",
+
+    },
+    {
+        id: 9,
+        name: "Glenna Reichert",
+        username: "Delphine",
+        email: "Chaim_McDermott@dana.io",
+
+    },
+    {
+        id: 10,
+        name: "Clementina DuBuque",
+        username: "Moriah.Stanton",
+        email: "Rey.Padberg@karina.biz",
+
+    }
+]
+src/app/api/users/route.js
+import users from "@/app/mock-data/users";
+import { NextResponse } from "next/server";
+
+//get all users
+export async function GET() {
+    return NextResponse.json(users)
+}
+export async function POST(req) {
+    const payload = await req.json()
+    //write biz logic to insert new user into db(array)
+    const newUser = {
+        id: users.length + 1,
+        ...payload
+    }
+    users.push(newUser)
+    return NextResponse.json(newUser, { status: 201 })
+}
+src/app/api/users/[id]/route.js
+import users from "@/app/mock-data/users";
+import { NextResponse } from "next/server";
+
+// export async function GET(req, obj) {
+//     const myparams = await obj.params
+//     console.log(myparams.id)
+//     return NextResponse.json({ message: 'by id' })
+// }
+
+export async function GET(req, { params }) {
+    const id = (await params).id
+    const user = users.find(tmpUser => tmpUser.id === +id)
+    if (!user) {
+        return NextResponse.json({ error: `User ${id} not found` }, { status: 404 })
+    }
+    return NextResponse.json(user)
+}
+Task:
+ You write update, and delete logic
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+									Query Params
+I want to filter data based on certain conditions
+for eg: i want to filter data based on email.
+
+URL :
+ http://localhost:3000/api/users  - GET - GETALL
+   /app/api/users/route.js
+
+http://localhost:3000/api/users/1 - GET - GetBy id
+   /app/api/users/[id]/route.js
+
+Query Param URL Pattern:
+
+http://localhost:3000/api/users/search?email=someemail@gmail.com
+
+Folder Struture
+/app/api/users/search/route.js
+
+import { NextResponse } from "next/server";
+
+export async function GET(req){
+    const { searchParams } = new URL(req.url)
+    const email = searchParams.get("email")
+    //filter data based on email:
+    return NextResponse.json({ email })
+}
+
+Task: wrap the biz logic to filter data based on email
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+									CURD operation with External API
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+src/app/api/comments/route.js
+import { NextResponse } from "next/server"
+
+const url = `https://jsonplaceholder.typicode.com/comments`
+
+export async function GET(req) {
+    try {
+        const response = await fetch(url)
+        const comments = await response.json()
+        return NextResponse.json(comments)
+    }
+    catch (err) {
+        return NextResponse.json({ err: err }, { status: 404 })
+    }
+}
+
+export async function POST(req) {
+    const comment = await req.json()
+    //send paylod to json placehodler
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(comment)
+    })
+    const newComment = await response.json()
+    return NextResponse.json(newComment, {
+        status: 201, headers: {
+            'Content-Type': 'application/json', 'url': '/api/create'
+        }
+
+    })
+}
+src/app/api/comments/[id]/route.js
+import { NextResponse } from "next/server"
+
+const url = 'https://jsonplaceholder.typicode.com/comments'
+
+export async function GET(req, { params }) {
+    try {
+        const id = (await params).id
+        const response = await fetch(`${url}/${+id}`)
+        const comment = await response.json()
+        if (comment.id) {
+            return NextResponse.json(comment)
+        }
+        return NextResponse.json({ message: `Comment for ${id} not found` }, { status: 404 })
+    }
+    catch (err) {
+        return NextResponse.json({ err: err }, { status: 500 })
+    }
+}
+
+export async function PUT(req, { params }) {
+    try {
+        const id = (await params).id
+        const { name, email, body } = await req.json()
+
+        if (name || email || body) {
+            const response = await fetch(`${url}/${+id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email, body })
+            })
+            console.log('response', response)
+            if (response.status === 500) {
+                return NextResponse.json({ message: `comment not found` }, { status: 404 })
+            }
+            const updatedComment = await response.json()
+            return NextResponse.json(updatedComment)
+        }
+        return NextResponse.json({ message: `Payload not supplied` }, { status: 404 })
+
+    }
+    catch (err) {
+        console.log(err)
+        return NextResponse.json({ err: err }, { status: 500 })
+    }
+}
+
+export async function DELETE(req, { params }) {
+    try {
+        const id = (await params).id
+        const response = await fetch(`${url}/${id}`, {
+            method: 'DELETE'
+        })
+        const comment = await response.json()
+        console.log(comment)
+        return NextResponse.json({ comment: 'The comment has been deleted' })
+
+    }
+    catch (err) {
+        return NextResponse.json({ err: err }, { status: 500 })
+    }
+}
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&									 						How to integrate with UI
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+export async function fetchComments() {
+    const response = await fetch('http://localhost:3000/api/comments')
+    const comments = await response.json()
+    return comments
+}
+
+export default async function CommentsPage() {
+    const comments = await fetchComments()
+    return <div className="ml-10 mt-10">
+        {
+            comments.map(comment => {
+                return <section key={comment.id}>
+                    <h1>CommentId : {comment.id} Post Id:{comment.postId}</h1>
+                    <h3>{comment.name}</h3>
+                    <h2>{comment.email}</h2>
+                    <p>{comment.body}</p>
+                                    <hr/>
+
+                </section>
+            })
+        }
+    </div>
+}
+
+Task: Write An api to filter data based on query param
+url is :https://jsonplaceholder.typicode.com/comments?postId=1
 
 
