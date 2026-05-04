@@ -2576,12 +2576,77 @@ export default function PostPage(){
     </>
 }
 
-						WhUsing "fetch" api  in client component is not recommended, the reason is which has no any caching feature is enabled, so fetch must be used only in server components/server side.
+						Using "fetch" api  in client component is not recommended, the reason is which has no any caching feature is enabled, so fetch must be used only in server components/server side.
+
+
 at if i want to write client side data fetching with performance?
 
  Dont use 'fetch' api
 
 				We have third party lib which internally wraps fetch only with caching features
 
+
+...........................................................................................................................................................................................................................................
+		      		 			Data Fetching in Client Components using SWR API
+...........................................................................................................................................................................................................................................
+
+What is SWR?
+
+	 The name “SWR” is derived from "stale-while-revalidate", a HTTP cache invalidation strategy popularized by HTTP RFC 5861. SWR is a strategy to first return the data from cache (stale), then send the fetch request (revalidate), and finally come with the up-to-date data.
+
+SWR is wrapper for fetch api only.
+
+Why SWR
+1.Client side caching by default
+2.Cache revalidation by default
+3.You dont need to write hooks like useEffect,useState,
+4.You get data,error,loading flags
+
+npm i swr
+
+rc/app/components/PostsClientUsingSWR.jsx
+
+'use client'
+import useSWR from "swr"
+
+function fetchposts(...args) {
+    return fetch(...args).then(res => res.json())
+}
+
+export default function FetchPostsUsingSWR() {
+    const url = 'https://jsonplaceholder.typicode.com/posts'
+    const { data, error, isLoading } = useSWR(url, fetchposts)
+
+    if (error) {
+        return <div>
+            <h1>Failed to Return</h1>
+        </div>
+    }
+    if (isLoading) {
+        return <h1 className="text-center mt-30">Loading...</h1>
+    }
+    return <ul className="m-10">
+        {
+            data.map(post => {
+                return <li key={post.id}>
+                    {post.title}
+                </li>
+            })
+        }
+    </ul>
+
+
+}	
+src/app/posts/page.js
+// import FetchPost from "./components/FetchPost"
+
+import FetchPostsUsingSWR from "./components/FetchPostsUsingSWR";
+
+export default function PostPage(){
+    return <>
+      {/* <FetchPost/> */}
+      <FetchPostsUsingSWR/>
+    </>
+}
 
 
