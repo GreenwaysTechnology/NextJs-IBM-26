@@ -3152,4 +3152,362 @@ export default function Counter() {
         }}>+</button>
     </div>
 }
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+										Database Integration
+...........................................................................................................................................................................................................................................
+
+Next js can integrate with any data base including sql (mysql,oracle,postgresql) and no sql (mongo,neodb,redis)
+
+In order to talk to databases, application uses database drivers and apis....
+
+Mostly we use use database frameworks called "ORM- Object Relational Mapping" Framework..
+
+For Node js, We have many frameworks...
+
+1.Prisma
+2.Sequelize
+3.Type ORM
+etc...
+
+In order to work with database, we need few things
+
+1.database  - mysql or mssql, or mongo database.
+
+How to setup database?
+
+ 1.download database and you have to install
+      https://www.postgresql.org/download/windows/
+ 2.via docker
+ 
+Now a days no body , installing databases directly into machine, rather, we can install via docker.
+
+For training purposes we are going to use "immemory database". You dont need to install database manually either directly or via docker.
+
+In-Memory Databases:
+1.sqlite
+
+2.Database drivers
+ It is set of js programs to connect with databases, and sending sql statements.
+
+
+Note: Create Typescript based project template
+
+npx create-next-app@latest
+√ What is your project named? ... db-app
+√ Would you like to use TypeScript? ... No / Yes
+√ Would you like to use ESLint? ... No / Yes
+√ Would you like to use Tailwind CSS? ... No / Yes
+√ Would you like your code inside a `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to use Turbopack for `next dev`? ... No / Yes
+√ Would you like to customize the import alias (`@/\*` by default)? ... No / Yes
+√ What import alias would you like configured? ... @/*
+
+
+Database Setup:
+
+Database: SQLite
+SQLite is a lightweight, file-based database that's perfect for development, prototyping, and small applications. It requires no setup and stores data in a local file. In this guide, you will learn how to add Prisma ORM to an existing TypeScript project, connect it to SQLite, introspect your existing database schema, and start querying with type-safe Prisma Client.
+
+Prerequisites:
+1. Set up Prisma ORM : After creating next.js Project
+
+npm install prisma @types/node @types/better-sqlite3 --save-dev
+npm install @prisma/client @prisma/adapter-better-sqlite3 dotenv
+
+Here's what each package does:
+
+prisma - The Prisma CLI for running commands like prisma init, prisma db pull, and prisma generate
+@prisma/client - The Prisma Client library for querying your database
+@prisma/adapter-better-sqlite3 - The SQLite driver adapter that connects Prisma Client to your database
+@types/better-sqlite3 - TypeScript type definitions for better-sqlite3
+dotenv - Loads environment variables from your .env file
+
+2. Initialize Prisma ORM
+
+npx prisma init --datasource-provider sqlite --output ../generated/prisma
+
+This command does a few things:
+
+Creates a prisma/ directory with a schema.prisma file containing your database connection configuration
+Creates a .env file in the root directory for environment variables
+Creates a prisma.config.ts file for Prisma configuration
+
+3.Define Model inside schema file
+
+Entity Represents a "table" in the database.
+
+Schema :
+  The plan or structure
+
+Define Model (Enity)
+
+model User {
+
+}
+model Product {
+
+}
+
+Fields:
+ Fields are mapped in the table as columns
+
+Syntax:
+
+model ModelName {
+ fieldName Type attributes
+}
+
+model Comment{
+ id Int @id @default(autoincrement())
+ title String
+ content String
+}
+
+id -  column Name(field)
+Int - Datatype
+@id -  attribute - Primary Key
+@default - attribute- what is value we are going to assign to primary key
+autoincrement - function which generates values...
+
+
+
+schema/schema.prisma
+
+Where to define this model?
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  role      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+Generate tables inside database and create sql quries:
+
+
+4. Schema Migration:
+   Create tables, in the database, incase of sqlite database itself is initalized 
+
+npx prisma migrate dev --name init
+
+
+5.Testing whether database tables are created or not
+  npx prisma studio
+After opening , you can add some rows in the browser UI.
+
+6.Prisma Client lib code
+
+Prisma Client api is used to talk database from rest apis.
+
+src/app/lib/prisma.ts
+import "dotenv/config"
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
+import { PrismaClient } from "../../../generated/prisma/client"
+
+const connectionString = `${process.env.DATABASE_URL}`
+
+const adapter = new PrismaBetterSqlite3({ url: connectionString })
+const prisma = new PrismaClient({ adapter })
+
+export { prisma }
+
+7.Write Router apis and access primsa apis
+
+src/app/api/users/route.js
+import { prisma } from "@/app/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET() {
+    const users = await prisma.user.findMany()
+    return NextResponse.json(users)
+}
+
+export async function POST(req: NextRequest) {
+    try {
+        const user = await req.json()
+        const res = await prisma.user.create({
+            data: user
+        })
+        return NextResponse.json(res, {
+            status: 201, headers: {
+                'Content-Type': "application/json", "url": 'api/create'
+            }
+        })
+    }
+    catch (err) {
+        return NextResponse.json({ err: err }, { status: 500 })
+    }
+}
+
+src/app/api/users/[id]/route.js
+import { prisma } from "@/app/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
+
+
+export async function GET(req: NextRequest, obj: any) {
+    try {
+
+        const id = +(await obj.params).id
+        const user = await prisma.user.findUnique({
+            where: {
+                id: id
+            }
+        })
+        if (!user) {
+            return NextResponse.json({ message: 'User not found' }, {
+                status: 404, headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+        }
+        return NextResponse.json(user)
+    }
+    catch (err) {
+        return NextResponse.json({ err: err }, { status: 500 })
+    }
+}
+export async function PUT(req: NextRequest, obj: any) {
+    try {
+        const id = +(await obj.params).id
+        const payload = await req.json()
+        const tmpUser = await prisma.user.findUnique({
+            where: {
+                id: id
+            }
+        })
+        if (!tmpUser) {
+            return NextResponse.json({ message: 'User not found' }, {
+                status: 404, headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+        } else {
+            const user = await prisma.user.update({
+                where: {
+                    id: id
+                },
+                data: payload
+            })
+            return NextResponse.json(user)
+
+        }
+    }
+    catch (err) {
+        return NextResponse.json({ err: err }, { status: 500 })
+    }
+}
+
+export async function DELETE(req: NextRequest, obj: any) {
+    try {
+        const id = +(await obj.params).id
+        const user = await prisma.user.findUnique({
+            where: {
+                id: id
+            }
+        })
+        if (user) {
+            await prisma.user.delete({
+                where: {
+                    id: id
+                }
+            })
+            return NextResponse.json({ message: `USER with id ${id} has been successfully deleted` }, {
+                status: 201, headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+        } else {
+            return NextResponse.json({ message: `No User found with ${id}` }, {
+                status: 404, headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+        }
+    }
+    catch (err) {
+        return NextResponse.json({ err: err }, { status: err.status })
+    }
+}
+
+8.UI integration
+src/app/users/page.tsx
+
+async function getUsers() {
+    const users = await fetch('http://localhost:3000/api/users')
+    return await users.json()
+}
+
+
+export default async function UserPage() {
+    const users = await getUsers()
+    return <div className="m-40">
+        <ul>
+            {users.map(user => {
+                return <li key={user.id}>{
+                    <>
+                        <p>{user.name}</p>
+                        <p>{user.email}</p>
+                        <p>{user.role}</p>
+                    </>
+                }</li>
+            })}
+        </ul>
+    </div>
+}
+
+package.json
+{
+  "name": "db-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.4.2",
+    "next": "16.2.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.19.39",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "prisma": "^7.8.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
+
+
+Task:
+ Add , Update, Delete UI.
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+
 
