@@ -3506,8 +3506,261 @@ Task:
  Add , Update, Delete UI.
 
 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+												Server actions
+.				 						Server actions
+..........................................................................................................................................................................................................................................
+
+	Server Actions are a feature in Next.js 15 that allow you to perform server-side operations directly from the client without creating an API route or an explicit handler.
+
+ This feature simplifies data fetching, form submissions, or other server-side logic by integrating it seamlessly into your component tree.
+
+Key Features of Server Actions in Next.js 15:
+
+1.Server-First Logic:
+  Runs on the server, avoiding unnecessary client-side processing.
+  Can securely access server-only resources like databases, environment variables, and APIs.
+  Direct Invocation from Components:
+
+  Trigger server-side logic directly via React components.
+  No need for separate API endpoints.
+
+2.Optimized Performance:
+ Reduces data fetching overhead.
+ Automatically optimizes the server-client data flow.
+
+3.Type Safety:
+  Built-in TypeScript support ensures type safety across your components and server logic.
 
 
+Integrated with App Router:
+
+Perfectly fits into Next.js's App Router system for organizing server and client code.
 
 
+Getting coding:
+
+'use server'
+export async function save(data){
+   //logic
+ }
+npx create-next-app@latest
+√ What is your project named? ... server-actions
+√ Would you like to use TypeScript? ... No / Yes
+√ Would you like to use ESLint? ... No / Yes
+√ Would you like to use Tailwind CSS? ... No / Yes
+√ Would you like your code inside a `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to use Turbopack for `next dev`? ... No / Yes
+√ Would you like to customize the import alias (`@/*` by default)? ... No / Yes
+√ What import alias would you like configured? ... @/*
+
+Use case: How to invoke server actions from the client component.
+
+Counter increment biz logic is written within server actions and how to call.
+
+src/app/counter/components/counter.jsx
+'use client'
+
+import { useState } from "react"
+
+export default function Counter() {
+    const [value, setValue] = useState(0)
+
+    return <div>
+        <h1>Counter : {value}</h1>
+        <button onClick={() => {
+            console.log('counter client')
+            setValue(value + 1)
+        }}>+</button>
+    </div>
+}
+src/app/counter/page.js
+import Counter from "@/app/counter/components/Counter";
+
+export default function CounterPage(){
+    return <div className="m-20">
+            <Counter/>
+    </div>
+}
+Now you can notice this logic is executed in client.
+
+						Can i write increment logic inside server, when i click the button which is part of client
+
+Yes! - Server Actions
+
+Server actions are simple function function which may take arg or return value...
+
+
+Getting coding:
+
+'use server'
+export async function save(data){
+   //logic
+ }
+npx create-next-app@latest
+√ What is your project named? ... server-actions
+√ Would you like to use TypeScript? ... No / Yes
+√ Would you like to use ESLint? ... No / Yes
+√ Would you like to use Tailwind CSS? ... No / Yes
+√ Would you like your code inside a `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to use Turbopack for `next dev`? ... No / Yes
+√ Would you like to customize the import alias (`@/*` by default)? ... No / Yes
+√ What import alias would you like configured? ... @/*
+
+Use case: How to invoke server actions from the client component.
+
+How to invoke server actions inside client component:
+
+Hello world:
+
+src/app/actions/counter.js
+'use server'
+
+export async function increment() {
+    console.log('Running in server')
+}
+
+Client component: how to invoke server action from client
+
+'use client'
+
+import { increment } from "@/app/actions/counterAction"
+
+export default async function Counter() {
+    const value = await increment()
+
+    return <div>
+        <button onClick={() => {
+            console.log('counter client')
+     
+        }}>+</button>
+    </div>
+}
+
+After running you will get error:
+<Counter> is an async Client Component. Only Server Components can be async at the moment. This error is often caused by accidentally adding `'use client'` to a module that was originally written for the server.
+
+You cant declare any client component as async function.
+
+Call async functions using "useTranistion" hook:
+
+'use client'
+import { useState, useTransition } from "react"
+
+import { increment } from "@/app/actions/counterAction"
+
+export default function Counter() {
+    const [isPending, startTransition] = useTransition()
+    const handleIncrement = () => {
+        startTransition(async () => {
+            await increment()
+        })
+    }
+    return <div>
+        <button onClick={() => {
+            console.log('counter client')
+            handleIncrement()
+        }}>+</button>
+    </div>
+}
+
+How to return value from server actions?
+
+actions/counter.js
+'use server'
+
+export async function increment() {
+    console.log('Running in server')
+    return 100
+}
+
+components/counter.js
+'use client'
+import { useState, useTransition } from "react"
+
+import { increment } from "@/app/actions/counterAction"
+
+export default function Counter() {
+    const [isPending, startTransition] = useTransition()
+    const handleIncrement = () => {
+        startTransition(async () => {
+            const value = await increment()
+            console.log(value)
+        })
+    }
+    return <div>
+        <button onClick={() => {
+            console.log('counter client')
+            handleIncrement()
+        }}>+</button>
+    </div>
+}
+
+How to write biz logic inside server component and return that value to client?
+
+actions/counter.js
+'use server'
+
+let count = 0
+export async function increment() {
+    console.log('Running in server')
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(count++)
+        }, 1000)
+    })
+}
+
+Getting delayed value in the client component.
+
+components/counter.jsx
+
+'use client'
+import { useState, useTransition } from "react"
+
+import { increment } from "@/app/actions/counterAction"
+
+export default function Counter() {
+    const [isPending, startTransition] = useTransition()
+    const handleIncrement = () => {
+        startTransition(async () => {
+            const value = await increment()
+            console.log(value)
+        })
+    }
+    return <div>
+        <button onClick={() => {
+            console.log('counter client')
+            handleIncrement()
+        }}>+</button>
+    </div>
+}
+
+How to update async values in the UI?
+  isPending- is going to ensure that promise is resolved or not.
+
+'use client'
+import { useState, useTransition } from "react"
+
+import { increment } from "@/app/actions/counterAction"
+
+export default function Counter({ initalCount = 0 }) {
+    const [isPending, startTransition] = useTransition()
+    const [count, setCount] = useState(initalCount)
+
+    const handleIncrement = () => {
+        startTransition(async () => {
+            const value = await increment()
+            setCount(value)
+        })
+    }
+    return <div>
+        <h1>{isPending ? 'Updating...' : `count:${count}`}</h1>
+        <button disabled={isPending} onClick={() => {
+            console.log('counter client')
+            handleIncrement()
+        }}>+</button>
+    </div>
+}
 
