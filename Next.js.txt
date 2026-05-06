@@ -3192,91 +3192,83 @@ In-Memory Databases:
 
 Note: Create Typescript based project template
 
+1.create project with typescript 
 npx create-next-app@latest
-√ What is your project named? ... db-app
+√ What is your project named? ... serveractions-db
+√ Would you like to use the recommended Next.js defaults? » No, customize settings
 √ Would you like to use TypeScript? ... No / Yes
-√ Would you like to use ESLint? ... No / Yes
+√ Which linter would you like to use? » None
+√ Would you like to use React Compiler? ... No / Yes
 √ Would you like to use Tailwind CSS? ... No / Yes
 √ Would you like your code inside a `src/` directory? ... No / Yes
 √ Would you like to use App Router? (recommended) ... No / Yes
-√ Would you like to use Turbopack for `next dev`? ... No / Yes
-√ Would you like to customize the import alias (`@/\*` by default)? ... No / Yes
+√ Would you like to customize the import alias (`@/*` by default)? ... No / Yes
 √ What import alias would you like configured? ... @/*
+√ Would you like to include AGENTS.md to guide coding agents to write up-to-date Next.js code? ... No / Yes
 
-
-Database Setup:
-
-Database: SQLite
-SQLite is a lightweight, file-based database that's perfect for development, prototyping, and small applications. It requires no setup and stores data in a local file. In this guide, you will learn how to add Prisma ORM to an existing TypeScript project, connect it to SQLite, introspect your existing database schema, and start querying with type-safe Prisma Client.
-
-Prerequisites:
-1. Set up Prisma ORM : After creating next.js Project
+2. Set up Prisma ORM
 
 npm install prisma @types/node @types/better-sqlite3 --save-dev
 npm install @prisma/client @prisma/adapter-better-sqlite3 dotenv
 
 Here's what each package does:
-
 prisma - The Prisma CLI for running commands like prisma init, prisma db pull, and prisma generate
 @prisma/client - The Prisma Client library for querying your database
 @prisma/adapter-better-sqlite3 - The SQLite driver adapter that connects Prisma Client to your database
 @types/better-sqlite3 - TypeScript type definitions for better-sqlite3
 dotenv - Loads environment variables from your .env file
 
-2. Initialize Prisma ORM
+3. Initialize Prisma ORM
+SQLite:
+SQLite is a lightweight, file-based database that's perfect for development, prototyping, and small applications. It requires no setup and stores data in a local file. 
 
 npx prisma init --datasource-provider sqlite --output ../generated/prisma
 
-This command does a few things:
+output:
 
-Creates a prisma/ directory with a schema.prisma file containing your database connection configuration
-Creates a .env file in the root directory for environment variables
-Creates a prisma.config.ts file for Prisma configuration
+Initialized Prisma in your project
 
-3.Define Model inside schema file
+  prisma/
+    schema.prisma
+  prisma.config.ts
+  .env
 
-Entity Represents a "table" in the database.
+warn You already have a .gitignore file. Don't forget to add .env in it to not commit any private information.
 
-Schema :
-  The plan or structure
+Next, set up your database:
+  1. Configure your DATABASE_URL in prisma.config.ts
+  2. Run prisma db pull to introspect your database.
 
-Define Model (Enity)
+Then, define your models in prisma/schema.prisma and run prisma migrate dev to apply your schema.
 
-model User {
+4.Introspect your database - Which is optional, incase if you have database setup already, then this setp will be usefull
 
-}
-model Product {
+px prisma db pull
+Loaded Prisma config from prisma.config.ts.
 
-}
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": SQLite database "dev.db" at "file:./dev.db"
 
-Fields:
- Fields are mapped in the table as columns
+× Introspecting based on datasource defined in prisma\schema.prisma
+Error:
+P1003 The introspected database does not exist:
 
-Syntax:
+prisma db pull could not create any models in your schema.prisma file and you will not be able to generate Prisma Client with the prisma generate command.
 
-model ModelName {
- fieldName Type attributes
-}
+To fix this, you have two options:
 
-model Comment{
- id Int @id @default(autoincrement())
- title String
- content String
-}
+- manually create a database.
+- make sure the database connection URL inside the datasource block in schema.prisma points to an existing database.
 
-id -  column Name(field)
-Int - Datatype
-@id -  attribute - Primary Key
-@default - attribute- what is value we are going to assign to primary key
-autoincrement - function which generates values...
+Then you can run prisma db pull again.
 
+5.Define Model in schema.prisma
 
-
-schema/schema.prisma
-
-Where to define this model?
+schema.prisma
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
   provider = "prisma-client"
@@ -3288,32 +3280,48 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  role      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
 }
 
-Generate tables inside database and create sql quries:
-
-
-4. Schema Migration:
-   Create tables, in the database, incase of sqlite database itself is initalized 
-
+6.sync models with database called migration
 npx prisma migrate dev --name init
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": SQLite database "dev.db" at "file:./dev.db"
+
+Applying migration `20260506051629_init`
+
+The following migration(s) have been created and applied from new schema changes:
+
+prisma\migrations/
+  └─ 20260506051629_init/
+    └─ migration.sql
+
+Your database is now in sync with your schema.
+
+7.Check the tables are generated in the database or not
+>npx prisma studio
+You can see the tables are created.
+
+8.Generate Prisma client dependencies
+
+Generate Prisma Client based on your introspected schema:
+
+>npx prisma generate
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.8.0) to .\generated\prisma in 35ms
 
 
-5.Testing whether database tables are created or not
-  npx prisma studio
-After opening , you can add some rows in the browser UI.
-
-6.Prisma Client lib code
-
-Prisma Client api is used to talk database from rest apis.
+9.create prisma client api
 
 src/app/lib/prisma.ts
+
 import "dotenv/config"
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
 import { PrismaClient } from "../../../generated/prisma/client"
@@ -3325,7 +3333,7 @@ const prisma = new PrismaClient({ adapter })
 
 export { prisma }
 
-7.Write Router apis and access primsa apis
+10.Write Rest api
 
 src/app/api/users/route.js
 import { prisma } from "@/app/lib/prisma";
@@ -3507,8 +3515,7 @@ Task:
 
 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 												Server actions
-.				 						Server actions
-..........................................................................................................................................................................................................................................
+.				 	.........................................................................................................................................................................................................................................
 
 	Server Actions are a feature in Next.js 15 that allow you to perform server-side operations directly from the client without creating an API route or an explicit handler.
 
@@ -3763,4 +3770,496 @@ export default function Counter({ initalCount = 0 }) {
         }}>+</button>
     </div>
 }
+
+
+										Forms and Server actions
+
+'use server'
+
+src/app/actions/userAction.js
+
+export async function createUser() {
+
+    return {
+        success: true, message: 'Data Saved Successfully'
+    }
+}
+
+We are going to write forms in two ways
+1.Client side form
+2.Server side form
+
+src/app/forms/userForm.jsx
+
+'use client'
+
+import { createUser } from "@/app/actions/userAction"
+
+export default function UserForm() {
+    async function handleSubmit(evt) {
+        evt.preventDefault()
+        //invoke server actions
+        try {
+            const result = await createUser()
+            alert(JSON.stringify(result))
+        }
+        catch (err) {
+
+        }
+    }
+    return <form onSubmit={handleSubmit}>
+        <div>
+            <input type="text" name="name" placeholder="Name" required />
+        </div>
+        <div>
+            <input type="email" name="email" placeholder="Email" required />
+        </div>
+        <div>
+            <button type="submit">Create User</button>
+        </div>
+    </form>
+}
+
+How to invoke server actions from the server component?
+
+src/app/user/page.js
+import { createUser } from "@/app/actions/userAction"
+
+export default async function UserPage(){
+    const response = await createUser()
+    return <div>
+            {JSON.stringify(response)}
+    </div>
+}
+Output:
+{"success":true,"message":"Data Saved Successfully"}
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+										Passing data from client Component to Server actions
+												Client Form to Server Actions
+***********************************************************************************************************************************************************
+
+src/app/actions/userAction.js
+'use server'
+
+export async function createUser(data) {
+    console.log(data)
+    return {
+        success: true, message: 'Data Saved Successfully'
+    }
+}
+
+src/app/user/userForm.jsx
+'use client'
+
+import { createUser } from "@/app/actions/userAction"
+
+export default function UserForm() {
+    async function handleSubmit(evt) {
+        evt.preventDefault()
+        //invoke server actions
+        try {
+            //read form values
+            const user = {
+                name: evt.target.name.value,
+                email: evt.target.email.value
+            }
+            const result = await createUser(user)
+            alert(JSON.stringify(result))
+        }
+        catch (err) {
+
+        }
+    }
+
+    return <form onSubmit={handleSubmit}>
+        <div>
+            <input type="text" name="name" placeholder="Name" required />
+        </div>
+        <div>
+            <input type="email" name="email" placeholder="Email" required />
+        </div>
+        <div>
+            <button type="submit">Create User</button>
+        </div>
+    </form>
+}
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+									 	Server Side Redirection
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ 	  To redirect after a form submission in Next.js 15 with Server Actions, you can use the "redirect" function from the Next.js router or perform a client-side redirect after the form submission is complete.
+
+Here’s how you can handle both server-side and client-side redirects.
+
+1. Redirect After Form Submission (Server-Side)
+If you want to redirect the user immediately after the form submission directly on the server, you can use the redirect() method in Server Actions.
+
+In Next.js 15, the redirect() function can be used directly inside the server action to navigate the user after the form is processed.
+
+src/app/success/page.js
+export default function SuccessPage() {
+    return <h1>SuccessPage</h1>
+}
+
+src/app/actions/userAction.js
+'use server'
+
+import { redirect } from "next/navigation"
+
+export async function createUser(data) {
+    // Todo: perform server side logic then forward to success page
+    console.log(data)
+    redirect('/success')
+}
+
+src/app/user/component/userForm.jsx
+'use client'
+
+import { createUser } from "@/app/actions/userAction"
+
+export default function UserForm() {
+    async function handleSubmit(evt) {
+        evt.preventDefault()
+        //invoke server actions
+        try {
+            //read form values
+            const user = {
+                name: evt.target.name.value,
+                email: evt.target.email.value
+            }
+            await createUser(user)
+            
+        }
+        catch (err) {
+
+        }
+    }
+
+    return <form onSubmit={handleSubmit}>
+        <div>
+            <input type="text" name="name" placeholder="Name" required />
+        </div>
+        <div>
+            <input type="email" name="email" placeholder="Email" required />
+        </div>
+        <div>
+            <button type="submit">Create User</button>
+        </div>
+    </form>
+}
+
+Note: 
+ after running,you can submit data to server action, and server action forwards to success page.
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+										Passing data from Server Component to Server Actions
+												Server Form to Server Actions
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Can you run forms in server or Can you submit data via server Component?
+
+Yes.
+
+Note: Convert Client Component into server Component - Client form to server Form
+
+Rules:
+1. No form listener is added
+
+<form  action="serveraction"></form>
+		|
+		Where to submit this form.
+			|
+			Server Program
+
+<form onSubmit={handleSubmit}/> - client side form submission
+
+Server side form submission:
+
+java syntax:
+    <form method="post" action="users.do"> </form>	
+    <form method="post" action="users.jsp"></form>
+
+Php Syntax
+<form method="post" action="users.php"></form>
+
+Dot.net:
+<form method="post" action="users.aspx"></form>
+
+Next.js
+<form  action={serveraction}></form>
+
+src/app/user/components/userForm.jsx
+
+import { createUser } from "@/app/actions/userAction"
+
+//server component
+export default function UserForm() {
+
+    return <form action={createUser} method="POST">
+        <div>
+            <input type="text" name="name" placeholder="Name" required />
+        </div>
+        <div>
+            <input type="email" name="email" placeholder="Email" required />
+        </div>
+        <div>
+            <button type="submit">Create User</button>
+        </div>
+    </form>
+}
+
+src/app/actions/userAction.js
+'use server'
+
+import { redirect } from "next/navigation"
+
+export async function createUser(data) {
+    // Todo: perform server side logic then forward to success page
+    console.log(data)
+    console.log(data.get('name') , data.get('email'))
+}
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+										Redirections and Passing data to Redirected Page
+	  								       Transfering data from Server action to Success Page
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+There are many ways
+1.Via Url -  Query Strings
+2.Via Session Object (cookies)
+
+
+QueryString syntax:
+  redirect(`/success?name=${encodeURIComponent(data.get("name"))}&email=${encodeURIComponent(data.get("email"))}`);
+
+eg:
+
+src/app/actions/userAction.js
+'use server'
+
+import { redirect } from "next/navigation"
+
+export async function createUser(formData) {
+     redirect(`/success?name=${encodeURIComponent(formData.get("name"))}&email=${encodeURIComponent(formData.get("email"))}`);
+}
+
+src/app/user/components/userForm.jsx
+
+import { createUser } from "@/app/actions/userAction"
+
+//server component
+export default function UserForm() {
+
+    return <form action={createUser} method="POST">
+        <div>
+            <input type="text" name="name" placeholder="Name" required />
+        </div>
+        <div>
+            <input type="email" name="email" placeholder="Email" required />
+        </div>
+        <div>
+            <button type="submit">Create User</button>
+        </div>
+    </form>
+}
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+								How to read Query String in success Page
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Using 'useSearchParams' hook we can read query strings transfered from server actions.
+Since we use hook , must be converted into client component.
+
+src/app/success/page.js
+'use client'
+import { useSearchParams } from 'next/navigation';
+
+export default function SuccessPage() {
+    const searchParams = useSearchParams()
+    const name = searchParams.get('name');
+    const email = searchParams.get('email');
+
+    return <div>
+        <h1>User Form Submitted Successfully!!</h1>
+        <h1>Name : {name}</h1>
+        <h2>Email : {email}</h2>
+    </div>
+}
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+								 Server actions and database programming
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Steps :
+
+1.create project with typescript 
+npx create-next-app@latest
+√ What is your project named? ... serveractions-db
+√ Would you like to use the recommended Next.js defaults? » No, customize settings
+√ Would you like to use TypeScript? ... No / Yes
+√ Which linter would you like to use? » None
+√ Would you like to use React Compiler? ... No / Yes
+√ Would you like to use Tailwind CSS? ... No / Yes
+√ Would you like your code inside a `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to customize the import alias (`@/*` by default)? ... No / Yes
+√ What import alias would you like configured? ... @/*
+√ Would you like to include AGENTS.md to guide coding agents to write up-to-date Next.js code? ... No / Yes
+
+2. Set up Prisma ORM
+
+npm install prisma @types/node @types/better-sqlite3 --save-dev
+npm install @prisma/client @prisma/adapter-better-sqlite3 dotenv
+
+Here's what each package does:
+prisma - The Prisma CLI for running commands like prisma init, prisma db pull, and prisma generate
+@prisma/client - The Prisma Client library for querying your database
+@prisma/adapter-better-sqlite3 - The SQLite driver adapter that connects Prisma Client to your database
+@types/better-sqlite3 - TypeScript type definitions for better-sqlite3
+dotenv - Loads environment variables from your .env file
+
+3. Initialize Prisma ORM
+SQLite:
+SQLite is a lightweight, file-based database that's perfect for development, prototyping, and small applications. It requires no setup and stores data in a local file. 
+
+npx prisma init --datasource-provider sqlite --output ../generated/prisma
+
+output:
+
+Initialized Prisma in your project
+
+  prisma/
+    schema.prisma
+  prisma.config.ts
+  .env
+
+warn You already have a .gitignore file. Don't forget to add .env in it to not commit any private information.
+
+Next, set up your database:
+  1. Configure your DATABASE_URL in prisma.config.ts
+  2. Run prisma db pull to introspect your database.
+
+Then, define your models in prisma/schema.prisma and run prisma migrate dev to apply your schema.
+
+4.Introspect your database - Which is optional, incase if you have database setup already, then this setp will be usefull
+
+px prisma db pull
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": SQLite database "dev.db" at "file:./dev.db"
+
+× Introspecting based on datasource defined in prisma\schema.prisma
+Error:
+P1003 The introspected database does not exist:
+
+prisma db pull could not create any models in your schema.prisma file and you will not be able to generate Prisma Client with the prisma generate command.
+
+To fix this, you have two options:
+
+- manually create a database.
+- make sure the database connection URL inside the datasource block in schema.prisma points to an existing database.
+
+Then you can run prisma db pull again.
+
+5.Define Model in schema.prisma
+
+schema.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
+}
+
+6.sync models with database called migration
+npx prisma migrate dev --name init
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": SQLite database "dev.db" at "file:./dev.db"
+
+Applying migration `20260506051629_init`
+
+The following migration(s) have been created and applied from new schema changes:
+
+prisma\migrations/
+  └─ 20260506051629_init/
+    └─ migration.sql
+
+Your database is now in sync with your schema.
+
+7.Check the tables are generated in the database or not
+>npx prisma studio
+You can see the tables are created.
+
+8.Generate Prisma client dependencies
+
+Generate Prisma Client based on your introspected schema:
+
+>npx prisma generate
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.8.0) to .\generated\prisma in 35ms
+
+
+9.create prisma client api
+
+src/app/lib/prisma.ts
+
+import "dotenv/config"
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
+import { PrismaClient } from "../../../generated/prisma/client"
+
+const connectionString = `${process.env.DATABASE_URL}`
+
+const adapter = new PrismaBetterSqlite3({ url: connectionString })
+const prisma = new PrismaClient({ adapter })
+
+export { prisma }
+
+10.Your apis - Server actions
+
+src/app/actions/userAction.ts
+
+'use server'
+
+import { prisma } from "@/app/lib/prisma";
+
+export async function getUsers() {
+    return await prisma.user.findMany({ orderBy: { id: "desc" } });
+}
+
+export async function addUser(name: any, email: any) {
+    await prisma.user.create({ data: { name, email } });
+}
+export async function updateUser(id: any, name: any, email: any) {
+    await prisma.user.update({
+        where: { id: Number(id) },
+        data: { name, email },
+    });
+}
+export async function deleteUser(id:any) {
+    await prisma.user.delete({ where: { id: Number(id) } });
+}
+
+
+
+
+
+
+
+
 
